@@ -5,9 +5,9 @@ from bs4 import BeautifulSoup
 import os
 from nltk.tokenize import word_tokenize
 import unicodedata
-import sys
+import sys#
 import csv
-from model import create_connection,create_table,create_link,select_all_links
+from model import create_connection,create_table_links,create_table_words,create_link,create_words,select_all_links,select_all_words
 from config import SITE_NAME,SITE_PROTOCOL
 
 def get_content(url):
@@ -45,7 +45,7 @@ def get_all(lst):
         
 def create_html(path,url,index):
     soup = get_content(url)
-    with open(f"{path}index({index}).html","w") as f:
+    with open(f"{path}index({index}).html","w") as f:#try
         f.write(str(soup))
 
 def create_diractory(path):
@@ -60,34 +60,35 @@ def get_words(url):
     Words = [string.translate(symbols) for string in word_tokenize(txt) if len(string.translate(symbols))>1]
     return Words
 
-def create_csv(path,words,index):
-    wds = set()
-    for i in words:
-        wds.add((i,words.count(i)))
-    with open(f"{path}indexWords({index}).csv","w") as f:
-        writer = csv.writer(f,delimiter='|')
-        for i in wds:
-            writer.writerow([i[0],i[1]])
-
 def main():
     conn = create_connection()
     if conn is not None:
-        create_table(conn)
+        create_table_links(conn)
+        create_table_words(conn)
         soup = get_content(SITE_PROTOCOL+SITE_NAME)
-        links = get_all(get_page_links(soup))
+        links = get_page_links(soup)
         for data in links:
             o = urlparse(data)
             link_data = (o.scheme,o.netloc,o.path)
             create_link(conn,link_data)
         select_all_links(conn)
-        create_diractory("/home/aram/Desktop/links/LinksHtml")
-        create_diractory("/home/aram/Desktop/links/WordAnalize")
+        create_diractory("/home/aram/Desktop/links/Links/LinksHtml")
+        words = set()
+        for i in links:
+            wds = get_words(i)
+            for j in wds:
+                words.add((j,wds.count(j)))
+        
+        for i in words:
+            create_words(conn,i)
+        select_all_words(conn)
+        
         for link in links:
             ix = links.index(link)+1
-            create_csv("/home/aram/Desktop/links/WordAnalize/",get_words(link),ix)
-            create_html("/home/aram/Desktop/links/LinksHtml/",link,ix)
+            create_html("/home/aram/Desktop/links/Links/LinksHtml/",link,ix)
 
 
         
 if __name__ == "__main__":
     main()
+
