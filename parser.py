@@ -65,7 +65,7 @@ def create_csv(path,words,index):
     for i in words:
         wds.add((i,words.count(i)))
     with open(f"{path}indexWords({index}).csv","w") as f:
-        writer = csv.writer(f,quotechar='|',delimiter='|')
+        writer = csv.writer(f,delimiter='|')
         for i in wds:
             writer.writerow([i[0],i[1]])
 
